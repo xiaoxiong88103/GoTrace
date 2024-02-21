@@ -95,10 +95,12 @@ func PrintSystemInfo(outputBuilder *strings.Builder) error {
 		"npu":     GetNPULoad(),
 		"gpu":     GetGPULoad(),
 		"disk":    fdisk,
+		"io":      GetIOStats(),
+		"network": GetNetworkStats(),
 	}
 
 	// 预定义关键字的顺序
-	predefinedOrder := []string{"sys_cpu", "free", "loadavg", "uptime", "nowtime", "npu", "gpu", "disk"}
+	predefinedOrder := []string{"sys_cpu", "free", "loadavg", "uptime", "nowtime", "npu", "gpu", "disk", "io", "network"}
 
 	// 遍历预定义的顺序，检查filteredKeys是否包含该关键字，如果是，则累积到输出字符串
 	for _, key := range predefinedOrder {

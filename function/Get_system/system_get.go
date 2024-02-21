@@ -299,3 +299,136 @@ func GetDiskUsageInfo() (string, error) {
 	allInfo := "[ " + strings.Join(infos, " | ") + " ]"
 	return allInfo, nil
 }
+
+
+// IO读写的使用率
+func GetIOStats() []string {
+	// 获取IO读写使用率
+	ioStats, err := disk.IOCounters()
+	if err != nil {
+		fmt.Printf("Error getting IO counters: %v\n", err)
+		return nil
+	}
+
+	var totalReadBytes, totalWriteBytes uint64
+	for _, stat := range ioStats {
+		totalReadBytes += stat.ReadBytes
+		totalWriteBytes += stat.WriteBytes
+	}
+
+	// 将读写字节转换为MB/s
+	ioReadUsage := float32(totalReadBytes) / 1024 / 1024
+	ioWriteUsage := float32(totalWriteBytes) / 1024 / 1024
+
+	// 休眠1秒钟，获取1秒内的IO使用率
+	time.Sleep(1 * time.Second)
+
+	// 再次获取IO读写使用率
+	ioStats, err = disk.IOCounters()
+	if err != nil {
+		fmt.Printf("Error getting IO counters: %v\n", err)
+		return nil
+	}
+
+	var newTotalReadBytes, newTotalWriteBytes uint64
+	for _, stat := range ioStats {
+		newTotalReadBytes += stat.ReadBytes
+		newTotalWriteBytes += stat.WriteBytes
+	}
+
+	// 计算1秒内的读写字节增量
+	readBytes := newTotalReadBytes - totalReadBytes
+	writeBytes := newTotalWriteBytes - totalWriteBytes
+
+	// 将增量转换为MB/s
+	ioReadUsage = float32(readBytes) / 1024 / 1024
+	ioWriteUsage = float32(writeBytes) / 1024 / 1024
+
+	read, err := Get_config_int("io", "read")
+	if err != nil {
+		return []string{fmt.Sprintf("err: %v", err)}
+	}
+
+	write, err := Get_config_int("io", "write")
+	if err != nil {
+		return []string{fmt.Sprintf("err: %v", err)}
+	}
+
+	// 定义一个字符串切片，用于存储返回的结果
+	var result []string
+
+	// 如果read和write都为1，则返回包含两个值的字符串切片
+	if read == 1 && write == 1 {
+		result = []string{
+			fmt.Sprintf("ioread: %.2f", ioReadUsage),
+			fmt.Sprintf("iowrite: %.2f", ioWriteUsage),
+		}
+	} else if read == 1 {
+		// 如果只有read为1，则返回只包含ioread的字符串切片
+		result = []string{
+			fmt.Sprintf("ioread: %.2f", ioReadUsage),
+		}
+	} else if write == 1 {
+		// 如果只有write为1，则返回只包含iowrite的字符串切片
+		result = []string{
+			fmt.Sprintf("iowrite: %.2f", ioWriteUsage),
+		}
+	}
+
+	return result
+}
+
+// 获取上下行和连接数的代码
+func GetNetworkStats() []string {
+	// 第一次获取网络IO统计
+	lastStat, err := net.IOCounters(true)
+	if err != nil {
+		return []string{fmt.Sprintf("网卡部分失败err:", err)}
+	}
+
+	// 等待一秒
+	time.Sleep(1 * time.Second)
+
+	// 再次获取网络IO统计
+	newStat, err := net.IOCounters(true)
+	if err != nil {
+		log.Printf("Error getting new network IO counters: %v", err)
+		return []string{fmt.Sprintf("网卡部分失败err:", err)}
+	}
+
+	// 计算上传和下载速率
+	var uploadRate, downloadRate float64
+	for i := range newStat {
+		if len(lastStat) > i { // 确保lastStat中有相应的索引
+			recvDiff := float64(newStat[i].BytesRecv - lastStat[i].BytesRecv)
+			transmitDiff := float64(newStat[i].BytesSent - lastStat[i].BytesSent)
+			// 注意：这里修正了下载和上传速率的计算
+			downloadRate += recvDiff / 1024 / 1024
+			uploadRate += transmitDiff / 1024 / 1024
+		}
+	}
+
+	// 获取网络连接数
+	connections, err := net.Connections("all")
+	if err != nil {
+		return []string{fmt.Sprintf("网卡部分失败err:", err)}
+	}
+
+	up, err := Get_config_int("network", "up")
+	down, err := Get_config_int("network", "down")
+	nc, err := Get_config_int("network", "nc")
+
+	var result []string
+
+	if up == 1 {
+		result = append(result, fmt.Sprintf("up: %.2f", uploadRate))
+	}
+	if down == 1 {
+		result = append(result, fmt.Sprintf("down: %.2f", downloadRate))
+	}
+	if nc == 1 {
+		result = append(result, fmt.Sprintf("nc: %d", len(connections)))
+	}
+
+	return result
+}

@@ -48,6 +48,8 @@ func Filterate_system() ([]string, error) {
 		"npu:",
 		"gpu:",
 		"disk:",
+		"io:",
+		"network:",
 	}
 
 	section := "system"
