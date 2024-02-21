@@ -1,0 +1,46 @@
+// 开启所需要监控的内容里面填写1 不需要责输入0 
+[system]
+cpu=1
+free=1
+npu=1
+gpu=1
+disk=1
+io=1
+network=1
+loadavg=1
+uptime=1
+nowtime=1
+
+[pid]
+pid=1
+cpu=1
+mem=1
+version=1
+verfile="version.txt" // 这里是记录version文件的version版本这个样子 version文件里== xxxx:版本号 ==
+runtime=1 //运行时间
+fd=1 //炳句
+
+[io]
+read=1
+write=1
+
+[network]
+up=1
+down=1
+nc=1
+
+[gpu]
+per=1
+umem=1
+tmem=1
+temp=1
+
+[disk]
+diskbfb=1
+
+[log]
+pid=pidname //这里输入要监控的pid名字
+savetime=30 //这里填写日志保存天数
+retime=5 //这里填写多少s监控一次 
+dir=/root/test/log/ //这里填写log保存位置
+loglin=500 //这里填写 日志system基础信息要保存多少行
