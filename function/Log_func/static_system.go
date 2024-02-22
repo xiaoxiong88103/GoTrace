@@ -193,45 +193,22 @@ func TrimLogFile(filePath string) error {
 	return os.WriteFile(filePath, []byte(strings.Join(lines, "\n")), 0644)
 }
 
-func getGPUInfo() []string {
-	var gpuInfo []string
 
-	// 执行 nvidia-smi 命令
-	cmd := exec.Command("nvidia-smi")
+// 获取GPU参数信息
+func getGPUInfo() string {
+	cmd := exec.Command("nvidia-smi", "--query-gpu=name,driver_version", "--format=csv,noheader")
 
-	// 获取命令输出
 	output, err := cmd.Output()
 	if err != nil {
 		fmt.Println("执行命令时出错:", err)
-		return gpuInfo
+		return ""
 	}
 
-	// 将输出按行拆分
-	lines := strings.Split(string(output), "\n")
-
-	// 遍历输出的每一行
-	for _, line := range lines {
-		// 提取 GPU 数量
-		if strings.Contains(line, "GPU ") && strings.Contains(line, ":") {
-			fields := strings.Fields(line)
-			number := strings.Trim(fields[1], ":")
-			gpuInfo = append(gpuInfo, "number:"+number)
-		}
-
-		// 提取 CUDA 驱动版本
-		if strings.Contains(line, "Driver Version") {
-			fields := strings.Fields(line)
-			version := fields[len(fields)-1]
-			gpuInfo = append(gpuInfo, "version:"+version)
-		}
-
-		// 提取 GPU 型号
-		if strings.Contains(line, "|") && strings.Contains(line, "GeForce") {
-			fields := strings.Fields(line)
-			model := fields[1]
-			gpuInfo = append(gpuInfo, "model:"+model)
-		}
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	var gpuList []string
+	for i, line := range lines {
+		gpuList = append(gpuList, fmt.Sprintf("%d:%s", i, strings.TrimSpace(line)))
 	}
 
-	return gpuInfo
+	return fmt.Sprintf("[%s | number:%d]", strings.Join(gpuList, " | "), len(lines))
 }
