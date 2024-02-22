@@ -125,6 +125,7 @@ func CollectAndLogSystemInfo(logDir string) {
 
 	// 注意:VPU信息的收集可能需要特定的方法
 	logger.Printf("GPU信息: %s", Get_system.GetGPULoad())
+	logger.Printf("GPU参数: %s", getGPUInfo())
 	logger.Printf("NPU信息: %s", Get_system.GetNPULoad())
 	logger.Printf("VPU被当前进程调用中: %s", Get_system.GetMppServiceProcessID())
 
@@ -190,4 +191,47 @@ func TrimLogFile(filePath string) error {
 
 	// 将调整后的内容写回文件
 	return os.WriteFile(filePath, []byte(strings.Join(lines, "\n")), 0644)
+}
+
+func getGPUInfo() []string {
+	var gpuInfo []string
+
+	// 执行 nvidia-smi 命令
+	cmd := exec.Command("nvidia-smi")
+
+	// 获取命令输出
+	output, err := cmd.Output()
+	if err != nil {
+		fmt.Println("执行命令时出错:", err)
+		return gpuInfo
+	}
+
+	// 将输出按行拆分
+	lines := strings.Split(string(output), "\n")
+
+	// 遍历输出的每一行
+	for _, line := range lines {
+		// 提取 GPU 数量
+		if strings.Contains(line, "GPU ") && strings.Contains(line, ":") {
+			fields := strings.Fields(line)
+			number := strings.Trim(fields[1], ":")
+			gpuInfo = append(gpuInfo, "number:"+number)
+		}
+
+		// 提取 CUDA 驱动版本
+		if strings.Contains(line, "Driver Version") {
+			fields := strings.Fields(line)
+			version := fields[len(fields)-1]
+			gpuInfo = append(gpuInfo, "version:"+version)
+		}
+
+		// 提取 GPU 型号
+		if strings.Contains(line, "|") && strings.Contains(line, "GeForce") {
+			fields := strings.Fields(line)
+			model := fields[1]
+			gpuInfo = append(gpuInfo, "model:"+model)
+		}
+	}
+
+	return gpuInfo
 }
