@@ -1,5 +1,6 @@
 #!/bin/bash
-docker build -t GoTrace:build .
+
+docker build -t gotrace:build .
 
 mkdir data
 
