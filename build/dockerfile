@@ -1,8 +1,10 @@
 FROM centos:7
-RUN yum update -y && yum install epel-* -y
+# 更新系统并安装必要的包
+RUN yum update -y && yum install epel-release -y
 RUN yum install curl wget vim tar git -y
 
-
+# 使用环境变量存放Go的版本号
+ENV GO_VERSION=1.20
 
 # 判断架构并下载对应的Go包，解压到/usr/local目录下
 RUN ARCH=$(uname -m) && \
@@ -15,16 +17,14 @@ RUN ARCH=$(uname -m) && \
     tar -C /usr/local -xzf go${GO_VERSION}.linux-${ARCH}.tar.gz
 
 # 设置环境变量
-ARG GOARCH=amd64
-# 使用环境变量存放Go的版本号
-ENV GO_VERSION 1.20
 ENV PATH $PATH:/usr/local/go/bin
 
-RUN git clone https://github.com/xiaoxiong88103/GoTrace.git .
-# 克隆项目并编译
-WORKDIR /GoTrace
+ARG GOARCH
 
-RUN go build -o GoTrace .
+# 克隆项目并编译
+RUN git clone https://github.com/xiaoxiong88103/GoTrace.git /GoTrace
+WORKDIR /GoTrace
+RUN GOARCH=$(GOARCH) go build -o GoTrace .
 
 # 复制生成的二进制文件和配置文件到 /data 目录
 RUN mkdir -p /data
