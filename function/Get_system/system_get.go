@@ -2,7 +2,6 @@ package Get_system
 
 import (
 	"System_Log/function/Get_config"
-	"github.com/shirou/gopsutil/v3/net"
 	"System_Log/function/Get_proc"
 	"fmt"
 	"github.com/shirou/gopsutil/v3/cpu"
@@ -10,6 +9,7 @@ import (
 	"github.com/shirou/gopsutil/v3/host"
 	"github.com/shirou/gopsutil/v3/load"
 	"github.com/shirou/gopsutil/v3/mem"
+	"github.com/shirou/gopsutil/v3/net"
 	"io/ioutil"
 	"log"
 	"os/exec"
@@ -301,7 +301,6 @@ func GetDiskUsageInfo() (string, error) {
 	return allInfo, nil
 }
 
-
 // IO读写的使用率
 func GetIOStats() []string {
 	// 获取IO读写使用率
@@ -345,12 +344,12 @@ func GetIOStats() []string {
 	ioReadUsage = float32(readBytes) / 1024 / 1024
 	ioWriteUsage = float32(writeBytes) / 1024 / 1024
 
-	read, err := Get_config_int("io", "read")
+	read, err := Get_config.Get_config_int("io", "read")
 	if err != nil {
 		return []string{fmt.Sprintf("err: %v", err)}
 	}
 
-	write, err := Get_config_int("io", "write")
+	write, err := Get_config.Get_config_int("io", "write")
 	if err != nil {
 		return []string{fmt.Sprintf("err: %v", err)}
 	}
@@ -415,9 +414,9 @@ func GetNetworkStats() []string {
 		return []string{fmt.Sprintf("网卡部分失败err:", err)}
 	}
 
-	up, err := Get_config_int("network", "up")
-	down, err := Get_config_int("network", "down")
-	nc, err := Get_config_int("network", "nc")
+	up, err := Get_config.Get_config_int("network", "up")
+	down, err := Get_config.Get_config_int("network", "down")
+	nc, err := Get_config.Get_config_int("network", "nc")
 
 	var result []string
 
