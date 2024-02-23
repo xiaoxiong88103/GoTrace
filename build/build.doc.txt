@@ -1,0 +1,6 @@
+#也可以使用docker进行编译只需本地安装好docker 即可 执行./build就行了
+./build.sh
+#编译linux amd64 的话执行这个
+GOOS=linux GOARCH=amd64 go build .
+#编译linux arm64 的话执行这个
+GOOS=linux GOARCH=arm64 go build .
