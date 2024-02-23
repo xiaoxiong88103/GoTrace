@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/shirou/gopsutil/v3 v3.24.1
+	gopkg.in/ini.v1 v1.67.0
 )
 
 require (
@@ -16,5 +17,4 @@ require (
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/yusufpapurcu/wmi v1.2.3 // indirect
 	golang.org/x/sys v0.16.0 // indirect
-	gopkg.in/ini.v1 v1.67.0 // indirect
 )
