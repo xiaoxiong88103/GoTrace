@@ -2,6 +2,7 @@ package Get_system
 
 import (
 	"System_Log/function/Get_config"
+	"github.com/shirou/gopsutil/v3/net"
 	"System_Log/function/Get_proc"
 	"fmt"
 	"github.com/shirou/gopsutil/v3/cpu"
