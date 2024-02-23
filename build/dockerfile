@@ -15,7 +15,6 @@ RUN ARCH=$(uname -m) && \
     tar -C /usr/local -xzf go${GO_VERSION}.linux-${ARCH}.tar.gz
 
 # 设置环境变量
-ARG GOOS=linux
 ARG GOARCH=amd64
 # 使用环境变量存放Go的版本号
 ENV GO_VERSION 1.20
