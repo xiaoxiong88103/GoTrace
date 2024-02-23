@@ -1,6 +1,6 @@
 FROM centos:7
 RUN yum update -y && yum install epel-* -y
-RUN yum install curl wget vim tar -y
+RUN yum install curl wget vim tar git -y
 
 # 设置工作目录
 WORKDIR /tmp
