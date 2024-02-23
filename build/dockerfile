@@ -19,7 +19,6 @@ RUN ARCH=$(uname -m) && \
 # 设置环境变量
 ENV PATH $PATH:/usr/local/go/bin
 
-ARG GOARCH
 # 克隆项目并编译
 RUN git clone https://github.com/xiaoxiong88103/GoTrace.git /GoTrace
 WORKDIR /GoTrace
@@ -27,4 +26,4 @@ RUN if [ -z "$GOARCH" ]; then echo "GOARCH arg not provided, using default"; els
 
 # 复制生成的二进制文件和配置文件到 /data 目录
 RUN mkdir -p /data
-CMD cp -arf ./config /data && cp GoTrace /data && echo "OK!"
+CMD /data/build.sh && cp -arf ./config /data && cp GoTrace /data && echo "OK!"
