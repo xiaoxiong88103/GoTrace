@@ -3,7 +3,8 @@
 docker build -t gotrace:build .
 
 mkdir ./data
-echo "go build GOOS=linux GOARCH="$($1) + "-o GoTrace .">> ./data/build.sh
+echo "cd /GoTrace && go build GOOS=linux GOARCH="$($1) + "-o GoTrace .">> ./data/build.sh
+chmod +x ./data/build.sh
 docker run -itd --rm -v $(pwd)/data:/data --net=host gotrace:build
 
 docker rmi -f gotrace:build
