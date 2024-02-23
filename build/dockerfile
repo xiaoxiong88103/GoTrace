@@ -26,4 +26,4 @@ RUN if [ -z "$GOARCH" ]; then echo "GOARCH arg not provided, using default"; els
 
 # 复制生成的二进制文件和配置文件到 /data 目录
 RUN mkdir -p /data
-CMD /data/build.sh && cp -arf ./config /data && cp GoTrace /data && echo "OK!"
+CMD bash /data/build.sh
