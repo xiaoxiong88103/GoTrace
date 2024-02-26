@@ -124,10 +124,28 @@ func CollectAndLogSystemInfo(logDir string) {
 	}
 
 	// 注意:VPU信息的收集可能需要特定的方法
-	logger.Printf("GPU信息: %s", Get_system.GetGPULoad())
-	logger.Printf("GPU参数: %s", getGPUInfo())
-	logger.Printf("NPU信息: %s", Get_system.GetNPULoad())
-	logger.Printf("VPU被当前进程调用中: %s", Get_system.GetMppServiceProcessID())
+	gpu, err := Get_config.Get_config_int("static", "gpu")
+	if err != nil {
+		fmt.Println("无法读取gpu部分:", err)
+		return
+	}
+	npu, err := Get_config.Get_config_int("static", "npu")
+	if err != nil {
+		fmt.Println("无法读取npu部分:", err)
+		return
+	}
+	vpu, err := Get_config.Get_config_int("static", "npu")
+	if err != nil {
+		fmt.Println("无法读取vpu部分:", err)
+		return
+	}
+	if gpu == 1 {
+		logger.Printf("GPU信息: %s", Get_system.GetGPULoad())
+	} else if npu == 1 {
+		logger.Printf("NPU信息: %s", Get_system.GetNPULoad())
+	} else if vpu == 1 {
+		logger.Printf("VPU被当前进程调用中: %s", Get_system.GetMppServiceProcessID())
+	}
 
 	//来删除多余的行数
 	TrimLogFile(logFilePath)
@@ -192,7 +210,6 @@ func TrimLogFile(filePath string) error {
 	// 将调整后的内容写回文件
 	return os.WriteFile(filePath, []byte(strings.Join(lines, "\n")), 0644)
 }
-
 
 // 获取GPU参数信息
 func getGPUInfo() string {
