@@ -7,3 +7,5 @@
 - **配置**: 确保环境变量已配置，使用`go mod tidy`进行依赖管理。
 - **编译**: 执行`go build .`进行编译。跨平台编译参考Go官方编译文档。
 - **docker编译**: git下来后`cd build && ./build.sh 架构` 即可 一共"arm" "arm64" "amd64" "386" 这些可选择 例如`./build.sh arm` 就是arm版本了
+## 注意事项
+默认不开启 记录 npu vpu gpu等 信息请先确定设备是否有 npu vpu gpu 然后在开启 版本记录也关闭了默认

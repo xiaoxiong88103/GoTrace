@@ -2,8 +2,8 @@
 [system]
 cpu=1
 free=1
-npu=1
-gpu=1
+npu=0
+gpu=0
 disk=1
 io=1
 network=1
@@ -15,7 +15,7 @@ nowtime=1
 pid=1
 cpu=1
 mem=1
-version=1
+version=0
 verfile="version.txt" // 这里是记录version文件的version版本这个样子 version文件里== xxxx:版本号 ==
 runtime=1 //运行时间
 fd=1 //炳句
