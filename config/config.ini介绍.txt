@@ -38,7 +38,7 @@ temp=1
 [disk]
 diskbfb=1
 
-//静态资源控制记录部分 为防止有一些机器没有这些 例如nvidaia 和 npu vpu等
+//静态资源控制记录部分 为防止有一些机器没有这些 例如nvidaia 和 npu vpu
 [static]
 gpu=0
 vpu=0
