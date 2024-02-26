@@ -141,6 +141,7 @@ func CollectAndLogSystemInfo(logDir string) {
 	}
 	if gpu == 1 {
 		logger.Printf("GPU信息: %s", Get_system.GetGPULoad())
+		logger.Printf("GPU参数: %s", getGPUInfo())
 	} else if npu == 1 {
 		logger.Printf("NPU信息: %s", Get_system.GetNPULoad())
 	} else if vpu == 1 {
