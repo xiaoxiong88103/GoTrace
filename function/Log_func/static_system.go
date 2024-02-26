@@ -76,7 +76,6 @@ func CollectAndLogSystemInfo(logDir string) {
 			info["CPU(s)"],
 			info["CPU max MHz"])
 		logger.Printf(cpuInfo)
-
 	} else {
 		cpus, _ := cpu.Info()
 		for _, cpu := range cpus {
