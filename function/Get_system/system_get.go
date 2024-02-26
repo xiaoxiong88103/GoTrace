@@ -110,20 +110,26 @@ func Get_proc_info(pidname string) (float64, float32, time.Duration, int, string
 		log.Fatalf("Error getting process info: %s\n", err)
 	}
 	mempercent := memPercent / 1024 / 1024
-	// 读取版本信息
-	verfile, err := Get_config.Get_config("pid", "verfile")
-	if err != nil {
-		verfile = ""
-		fmt.Println("错误了读取版本:", err)
+	version_open, err := Get_config.Get_config_int("pid", "version")
+	if version_open == 1 {
+		// 读取版本信息
+		verfile, err := Get_config.Get_config("pid", "verfile")
+		if err != nil {
+			verfile = ""
+			fmt.Println("错误了读取版本:", err)
+		}
+		if verfile == "" {
+			return cpuPercent, mempercent, runTime, handleCount, "", pid, err
+		}
+		version, err := Get_proc.ReadVersionFromFile(verfile)
+		if err != nil {
+			log.Fatalf("Error reading version file: %s\n", err)
+		}
+		return cpuPercent, mempercent, runTime, handleCount, version, pid, err
 	}
-	if verfile == "" {
-		return cpuPercent, mempercent, runTime, handleCount, "", pid, err
-	}
-	version, err := Get_proc.ReadVersionFromFile(verfile)
-	if err != nil {
-		log.Fatalf("Error reading version file: %s\n", err)
-	}
-	return cpuPercent, mempercent, runTime, handleCount, version, pid, err
+
+	return cpuPercent, mempercent, runTime, handleCount, "", pid, err
+
 }
 
 // 获取GPU的占用等信息
