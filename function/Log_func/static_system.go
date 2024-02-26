@@ -78,18 +78,9 @@ func CollectAndLogSystemInfo(logDir string) {
 		logger.Printf(cpuInfo)
 
 	} else {
-		//cpus, _ := cpu.Info()
-		//for _, cpu := range cpus {
-		//	logger.Printf("CPU型号: %s, 核心数: %d, 频率: %.2fGHz\n", cpu.ModelName, cpu.Cores, cpu.Mhz/1000)
-		//}
-		cpus, err := cpu.Info()
-		if err != nil {
-			fmt.Println("Error getting CPU info:", err)
-			return
-		}
-
+		cpus, _ := cpu.Info()
 		for _, cpu := range cpus {
-			fmt.Printf("CPU型号: %s, 核心数: %d, 频率: %.2fGHz\n", cpu.ModelName, cpu.Cores, float64(cpu.Mhz)/1000)
+			logger.Printf("CPU型号: %s, 核心数: %d, 频率: %.2fGHz\n", cpu.ModelName, cpu.Cores, cpu.Mhz/1000)
 		}
 
 	}
