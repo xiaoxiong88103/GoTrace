@@ -20,7 +20,7 @@ docker wait $CONTAINER_ID
 # 清理工作
 docker rmi -f gotrace:build
 rm -rf ./data/build.sh
-
+echo 'y' |docker system prune
 
 # 打印成功消息
 echo "恭喜！编译成功。在 ./data 目录中找到二进制文件和相应的配置文件。"
