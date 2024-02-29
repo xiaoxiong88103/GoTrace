@@ -50,6 +50,7 @@ func Filterate_system() ([]string, error) {
 		"disk:",
 		"io:",
 		"network:",
+		"rga:",
 	}
 
 	section := "system"
