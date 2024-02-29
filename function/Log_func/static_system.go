@@ -139,15 +139,25 @@ func CollectAndLogSystemInfo(logDir string) {
 		fmt.Println("无法读取vpu部分:", err)
 		return
 	}
+	rga, err := Get_config.Get_config_int("static", "rga")
+	if err != nil {
+		fmt.Println("无法读取vpu部分:", err)
+		return
+	}
+
 	if gpu == 1 {
 		logger.Printf("GPU信息: %s", Get_system.GetGPULoad())
 		logger.Printf("GPU参数: %s", getGPUInfo())
-	} else if npu == 1 {
+	}
+	if npu == 1 {
 		logger.Printf("NPU信息: %s", Get_system.GetNPULoad())
-	} else if vpu == 1 {
+	}
+	if vpu == 1 {
 		logger.Printf("VPU被当前进程调用中: %s", Get_system.GetMppServiceProcessID())
 	}
-
+	if rga == 1 {
+		logger.Printf("RGA版本是:" + GetRGAversion())
+	}
 	//来删除多余的行数
 	TrimLogFile(logFilePath)
 
@@ -229,4 +239,25 @@ func getGPUInfo() string {
 	}
 
 	return fmt.Sprintf("[%s | number:%d]", strings.Join(gpuList, " | "), len(lines))
+}
+
+func GetRGAversion() string {
+	// 使用os.ReadFile直接读取整个文件内容
+	content, err := os.ReadFile("/sys/kernel/debug/rkrga/driver_version")
+	if err != nil {
+		return fmt.Sprintf("错误RGA获取: %v", err) // 返回错误信息
+	}
+	// 将读取的内容（字节切片）转换为字符串
+	contentStr := string(content)
+
+	// 使用正则表达式匹配版本号
+	versionRegex := regexp.MustCompile(`v\d+\.\d+\.\d+`)
+	matches := versionRegex.FindStringSubmatch(contentStr)
+	if len(matches) > 0 {
+		// 如果找到匹配项，返回版本号
+		return matches[0]
+	}
+
+	// 如果没有找到匹配项，返回相应的提示信息
+	return "未找到RGA版本信息"
 }

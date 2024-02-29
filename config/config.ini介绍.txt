@@ -20,29 +20,35 @@ verfile="version.txt" // 这里是记录version文件的version版本这个样�
 runtime=1 //运行时间
 fd=1 //炳句
 
+//实现了记录io读写率
 [io]
 read=1
 write=1
 
+//实现了网络上下带宽 和 连接数记录
 [network]
 up=1
 down=1
 nc=1
 
+//里面实现了gpu的运行 内存大小 总大小 温度 编解使用率记录
 [gpu]
 per=1
 umem=1
 tmem=1
 temp=1
+dec=1
+enc=1
 
 [disk]
 diskbfb=1
 
-//静态资源控制记录部分 为防止有一些机器没有这些 例如nvidaia 和 npu vpu
+//静态资源控制记录部分 为防止有一些机器没有这些 例如nvidaia 和 npu vpu rga
 [static]
 gpu=0
 vpu=0
 npu=0
+rga=0
 
 [log]
 pid=pidname //这里输入要监控的pid名字
