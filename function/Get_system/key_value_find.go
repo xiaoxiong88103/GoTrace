@@ -34,16 +34,31 @@ func PrintFilteredValues(pidname string, outputBuilder *strings.Builder) error {
 	// 预定义关键字的顺序
 	predefinedOrder := []string{"cpu", "mem", "runtime", "fd", "version", "pid"}
 
+	// 为每个键设置不同的固定长度
+	keyLengths := map[string]int{
+		"cpu":     8,
+		"mem":     12,
+		"runtime": 20,
+		"fd":      6,
+		"version": 12,
+		"pid":     8,
+	}
+
 	// 遍历预定义的顺序，检查filteredKeys是否包含该关键字，如果是，则累积到输出字符串
 	for _, key := range predefinedOrder {
 		for _, filteredKey := range filteredKeys {
 			cleanKey := strings.TrimSuffix(filteredKey, ":")
 			if cleanKey == key {
 				if value, exists := infoMap[cleanKey]; exists {
-					if outputBuilder.Len() > 0 {
-						outputBuilder.WriteString(" | ") // 在现有内容后添加分隔符
+					length, ok := keyLengths[cleanKey]
+					if !ok {
+						length = 10 // 默认长度，如果没有特别指定
 					}
-					outputBuilder.WriteString(fmt.Sprintf("%s: %v", cleanKey, value))
+					formattedValue := fmt.Sprintf("%-*v", length, value) // 使用指定长度对齐
+					if outputBuilder.Len() > 0 {
+						outputBuilder.WriteString(" | ")
+					}
+					outputBuilder.WriteString(fmt.Sprintf("%s: %s", cleanKey, formattedValue))
 					break // 找到匹配项后跳出内层循环
 				}
 			}
@@ -51,6 +66,23 @@ func PrintFilteredValues(pidname string, outputBuilder *strings.Builder) error {
 	}
 
 	return nil
+
+	// 遍历预定义的顺序，检查filteredKeys是否包含该关键字，如果是，则累积到输出字符串
+	//for _, key := range predefinedOrder {
+	//	for _, filteredKey := range filteredKeys {
+	//		cleanKey := strings.TrimSuffix(filteredKey, ":")
+	//		if cleanKey == key {
+	//			if value, exists := infoMap[cleanKey]; exists {
+	//				if outputBuilder.Len() > 0 {
+	//					outputBuilder.WriteString(" | ") // 在现有内容后添加分隔符
+	//				}
+	//				outputBuilder.WriteString(fmt.Sprintf("%s: %v", cleanKey, value))
+	//				break // 找到匹配项后跳出内层循环
+	//			}
+	//		}
+	//	}
+	//}
+
 }
 
 // PrintSystemInfo 打印系统信息，基于 Filterate_system 的结果
@@ -97,10 +129,26 @@ func PrintSystemInfo(outputBuilder *strings.Builder) error {
 		"disk":    fdisk,
 		"io":      GetIOStats(),
 		"network": GetNetworkStats(),
+		"rga":     ReadAndFormatRGALoad(),
 	}
 
 	// 预定义关键字的顺序
-	predefinedOrder := []string{"sys_cpu", "free", "loadavg", "uptime", "nowtime", "npu", "gpu", "disk", "io", "network"}
+	predefinedOrder := []string{"sys_cpu", "free", "loadavg", "uptime", "nowtime", "io", "network", "npu", "rga", "gpu", "disk"}
+
+	// 为每个键设置不同的固定长度
+	keyLengths := map[string]int{
+		"sys_cpu": 8,
+		"free":    12,
+		"loadavg": 10,
+		"uptime":  20,
+		"nowtime": 20,
+		"io":      10,
+		"network": 10,
+		"npu":     8,
+		"rga":     28,
+		"gpu":     10,
+		"disk":    15,
+	}
 
 	// 遍历预定义的顺序，检查filteredKeys是否包含该关键字，如果是，则累积到输出字符串
 	for _, key := range predefinedOrder {
@@ -108,10 +156,15 @@ func PrintSystemInfo(outputBuilder *strings.Builder) error {
 			cleanKey := strings.TrimSuffix(filteredKey, ":")
 			if cleanKey == key {
 				if value, exists := infoMap[cleanKey]; exists {
-					if outputBuilder.Len() > 0 {
-						outputBuilder.WriteString(" | ") // 在现有内容后添加分隔符
+					length, ok := keyLengths[cleanKey]
+					if !ok {
+						length = 10 // 默认长度，如果没有特别指定
 					}
-					outputBuilder.WriteString(fmt.Sprintf("%s: %v", cleanKey, value))
+					formattedValue := fmt.Sprintf("%-*v", length, value) // 使用指定长度对齐
+					if outputBuilder.Len() > 0 {
+						outputBuilder.WriteString(" | ")
+					}
+					outputBuilder.WriteString(fmt.Sprintf("%s: %s", cleanKey, formattedValue))
 					break // 找到匹配项后跳出内层循环
 				}
 			}
@@ -119,4 +172,19 @@ func PrintSystemInfo(outputBuilder *strings.Builder) error {
 	}
 
 	return nil
+	//// 遍历预定义的顺序，检查filteredKeys是否包含该关键字，如果是，则累积到输出字符串
+	//for _, key := range predefinedOrder {
+	//	for _, filteredKey := range filteredKeys {
+	//		cleanKey := strings.TrimSuffix(filteredKey, ":")
+	//		if cleanKey == key {
+	//			if value, exists := infoMap[cleanKey]; exists {
+	//				if outputBuilder.Len() > 0 {
+	//					outputBuilder.WriteString(" | ") // 在现有内容后添加分隔符
+	//				}
+	//				outputBuilder.WriteString(fmt.Sprintf("%s: %v", cleanKey, value))
+	//				break // 找到匹配项后跳出内层循环
+	//			}
+	//		}
+	//	}
+	//}
 }

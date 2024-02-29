@@ -3,6 +3,7 @@ package Get_system
 import (
 	"System_Log/function/Get_config"
 	"System_Log/function/Get_proc"
+	"bufio"
 	"fmt"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
@@ -10,10 +11,12 @@ import (
 	"github.com/shirou/gopsutil/v3/load"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/shirou/gopsutil/v3/net"
-	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
+	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -30,8 +33,22 @@ func queryGPUInfo(query string) ([]string, error) {
 	return strings.Split(strings.TrimSpace(string(output)), "\n"), nil
 }
 
+func queryGUPdec() (string, string, error) {
+	cmd := exec.Command("bash", "-c", "nvidia-smi dmon | awk 'NR > 2 {print  $7,  $8; exit}'")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", "", err
+	}
+
+	values := strings.Fields(string(output))
+	if len(values) != 2 {
+		return "", "", fmt.Errorf("unexpected number of values returned")
+	}
+	return values[0], values[1], nil
+}
+
 // formatGPUInfo 用于根据条件格式化GPU信息
-func formatGPUInfo(temperatures, memoryUsed, memoryTotal, utilization []string, Temp, UsedMem, TotalMem, Per string) ([]string, error) {
+func formatGPUInfo(temperatures, memoryUsed, memoryTotal, utilization []string, Temp, UsedMem, TotalMem, Per, Dec, Enc string) ([]string, error) {
 	var formattedInfo []string
 	for i := 0; i < len(temperatures); i++ {
 		infoParts := []string{fmt.Sprintf("GPU%d:", i)}
@@ -47,6 +64,20 @@ func formatGPUInfo(temperatures, memoryUsed, memoryTotal, utilization []string, 
 		}
 		if Per == "1" {
 			infoParts = append(infoParts, fmt.Sprintf("Utilization:%s%%", utilization[i]))
+		}
+		if Dec == "1" || Enc == "1" {
+			enc, dec, err := queryGUPdec()
+			if err != nil {
+				infoParts = append(infoParts, fmt.Sprintf("errror:%s%%", err))
+			}
+
+			if Dec == "1" {
+				infoParts = append(infoParts, fmt.Sprintf("Dec:%s%%", dec))
+			}
+			if Enc == "1" {
+				infoParts = append(infoParts, fmt.Sprintf("Enc:%s%%", enc))
+			}
+
 		}
 
 		formattedInfo = append(formattedInfo, strings.Join(infoParts, ", "))
@@ -68,14 +99,14 @@ func System_get() (float64, uint64, float64, error) {
 	if err != nil {
 		return 0, 0, 0.0, err // 如果获取虚拟内存信息时出错，返回错误
 	}
-	mem := vmem.Used / 1024 / 1024 // 将内存使用量从字节转换为MB
+	vmem_mem := vmem.Used / 1024 / 1024 // 将内存使用量从字节转换为MB
 
 	avg, err := load.Avg()
 	if err != nil {
 		return 0, 0, 0.0, err // 如果获取系统平均负载时出错，返回错误
 	}
 
-	return percent[0], mem, avg.Load1, nil // 返回内存使用量（MB）和系统1分钟平均负载
+	return percent[0], vmem_mem, avg.Load1, nil // 返回内存使用量（MB）和系统1分钟平均负载
 }
 
 // 返回开机时间和当前时间（中国时区）
@@ -138,7 +169,7 @@ func GetGPULoad() []string {
 	if arch != "amd64" {
 		filePath := "/sys/devices/platform/fb000000.gpu/devfreq/fb000000.gpu/load"
 		// 读取文件内容
-		content, err := ioutil.ReadFile(filePath)
+		content, err := os.ReadFile(filePath)
 		if err != nil {
 			// 读取文件失败时，返回错误信息的格式化字符串
 			return []string{fmt.Sprintf("[Error: %v]", err)}
@@ -199,8 +230,17 @@ func GetGPULoad() []string {
 		return []string{fmt.Sprintf("[Error: %v]", err)}
 	}
 
+	dec, err := Get_config.Get_config("gpu", "dec")
+	if err != nil {
+		return []string{fmt.Sprintf("[Error: %v]", err)}
+	}
+	enc, err := Get_config.Get_config("gpu", "enc")
+	if err != nil {
+		return []string{fmt.Sprintf("[Error: %v]", err)}
+	}
+
 	// 格式化并输出GPU信息，根据控制变量决定显示哪些信息
-	formattedInfo, err := formatGPUInfo(temperatures, memoryUsed, memoryTotal, utilization, temp, umem, tmem, per)
+	formattedInfo, err := formatGPUInfo(temperatures, memoryUsed, memoryTotal, utilization, temp, umem, tmem, per, dec, enc)
 	if err != nil {
 		return []string{fmt.Sprintf("[Error: %v]", err)}
 	}
@@ -221,7 +261,7 @@ func GetNPULoad() string {
 	filePath := "/sys/kernel/debug/rknpu/load"
 
 	// 读取文件内容
-	content, err := ioutil.ReadFile(filePath)
+	content, err := os.ReadFile(filePath)
 	if err != nil {
 		fmt.Printf("获取NPU负载信息时出错：%v\n", err)
 		return ""
@@ -437,4 +477,39 @@ func GetNetworkStats() []string {
 	}
 
 	return result
+}
+
+// ReadAndFormatRGALoad 读取RGA负载信息并格式化输出
+func ReadAndFormatRGALoad() string {
+	var loads []string
+
+	file, err := os.Open("/sys/kernel/debug/rkrga/load")
+	if err != nil {
+		return fmt.Sprintf("打开文件时出错: %w", err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	regex := regexp.MustCompile(`scheduler\[(\d+)\]: (rga[23]_core[01]|rga2)`)
+	loadRegex := regexp.MustCompile(`load = (\d+)%`)
+
+	var currentScheduler string
+	for scanner.Scan() {
+		line := scanner.Text()
+		if matches := regex.FindStringSubmatch(line); len(matches) > 0 {
+			index, _ := strconv.Atoi(matches[1])
+			currentScheduler = fmt.Sprintf("rga%d", index)
+		} else if matches := loadRegex.FindStringSubmatch(line); len(matches) > 0 && currentScheduler != "" {
+			loads = append(loads, fmt.Sprintf("%s:%s%%", currentScheduler, matches[1]))
+			currentScheduler = "" // Reset for the next scheduler
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Sprintf("读取文件时出错: %w", err)
+	}
+
+	formattedLoads := fmt.Sprintf("[%s]", strings.Join(loads, "|"))
+
+	return formattedLoads
 }
