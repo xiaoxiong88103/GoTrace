@@ -36,9 +36,9 @@ func PrintFilteredValues(pidname string, outputBuilder *strings.Builder) error {
 
 	// 为每个键设置不同的固定长度
 	keyLengths := map[string]int{
-		"cpu":     8,
-		"mem":     12,
-		"runtime": 20,
+		"cpu":     6,
+		"mem":     9,
+		"runtime": 14,
 		"fd":      6,
 		"version": 12,
 		"pid":     8,
@@ -137,13 +137,13 @@ func PrintSystemInfo(outputBuilder *strings.Builder) error {
 
 	// 为每个键设置不同的固定长度
 	keyLengths := map[string]int{
-		"sys_cpu": 8,
-		"free":    12,
-		"loadavg": 10,
+		"sys_cpu": 6,
+		"free":    6,
+		"loadavg": 6,
 		"uptime":  20,
 		"nowtime": 20,
 		"io":      10,
-		"network": 10,
+		"network": 8,
 		"npu":     8,
 		"rga":     28,
 		"gpu":     10,
