@@ -8,7 +8,7 @@ import (
 
 // GetINIValue 从INI文件中获取指定section和key的值
 func Get_config(section, key string) (string, error) {
-	cfg, err := ini.Load("./config/config.ini")
+	cfg, err := ini.Load(Path_Config + "/config.ini")
 	if err != nil {
 		return "", err
 	}
